@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-10-01
+
+### Added
+- **Phase 4: XGBoost Primary Classifier & Leaderboard**:
+  - `ml/src/models/xgboost_model.py`: Production-grade XGBoost classifier wrapper with automatic `scale_pos_weight` calculation for class imbalance, L1/L2 regularization (`reg_alpha=0.05`, `reg_lambda=1.0`), tree depth 6, and gain-based feature importances.
+  - `ml/train_xgboost.py`: Training and benchmarking script on temporal held-out test split, comparing against all baselines.
+  - Benchmarked test results:
+    - XGBoost achieves highest overall **F1-Score (0.9431)** and **Recall (0.9508)** with **Precision (0.9355)**.
+    - False Positive Rate: **0.18%**; False Negative Rate: **4.92%**.
+    - PR-AUC: **0.9825**; ROC-AUC: **0.9990**; Brier Score: **0.0023**.
+  - `tests/unit/test_xgboost.py`: Unit tests validating probability bounds, custom thresholds, and booster extraction.
+  - Model artifact exported to `ml/models/saved/xgboost_champion.joblib`.
+
 ## [0.3.0] - 2026-10-01
 
 ### Added
