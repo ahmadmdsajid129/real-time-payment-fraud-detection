@@ -46,6 +46,9 @@ postgres_data/
 redis_data/
 kafka_data/
 zookeeper_data/
+*.db
+*.sqlite
+*.sqlite3
 
 # Logs
 *.log
