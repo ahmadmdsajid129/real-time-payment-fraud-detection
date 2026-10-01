@@ -29,19 +29,19 @@ class HealthResponse(BaseModel):
 # Transactions & Scoring
 # -----------------------------------------------------------------------------
 class TransactionScoreRequest(BaseModel):
-    transaction_id: str = Field(..., example="TXN-8839210")
-    timestamp: Optional[str] = Field(default=None, example="2026-10-01T12:15:30Z")
-    customer_id: str = Field(..., example="CUST-10492")
-    merchant_id: str = Field(default="MERCH-4091", example="MERCH-4091")
-    amount: float = Field(..., gt=0.0, example=450.00)
-    currency: str = Field(default="USD", example="USD")
-    country: str = Field(default="US", example="US")
-    city: str = Field(default="New York", example="New York")
+    transaction_id: str = Field(...)
+    timestamp: Optional[str] = Field(default=None)
+    customer_id: str = Field(...)
+    merchant_id: str = Field(default="MERCH-4091")
+    amount: float = Field(..., gt=0.0)
+    currency: str = Field(default="USD")
+    country: str = Field(default="US")
+    city: str = Field(default="New York")
     lat: Optional[float] = Field(default=40.7128)
     lon: Optional[float] = Field(default=-74.0060)
-    device_id: str = Field(default="DEV-MOBILE-01", example="DEV-MOBILE-01")
-    payment_method: str = Field(default="credit_card", example="credit_card")
-    ip_address: Optional[str] = Field(default="192.168.1.1", example="192.168.1.1")
+    device_id: str = Field(default="DEV-MOBILE-01")
+    payment_method: str = Field(default="credit_card")
+    ip_address: Optional[str] = Field(default="192.168.1.1")
     idempotency_key: Optional[str] = None
 
 
@@ -144,7 +144,7 @@ class DashboardSummaryResponse(BaseModel):
 class FeedbackRequest(BaseModel):
     transaction_id: str
     analyst_id: str
-    actual_label: str = Field(..., regex="^(FRAUD|LEGITIMATE)$")
+    actual_label: str = Field(..., pattern="^(FRAUD|LEGITIMATE)$")
     notes: Optional[str] = None
 
 
