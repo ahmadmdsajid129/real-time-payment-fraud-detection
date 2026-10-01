@@ -98,6 +98,18 @@ class FraudRepository:
         if isinstance(ts, str):
             ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
 
+        # Ensure idempotency
+        existing = (
+            self.session.query(Transaction)
+            .filter(
+                (Transaction.transaction_id == txn_dict["transaction_id"])
+                | (Transaction.idempotency_key == txn_dict["idempotency_key"])
+            )
+            .first()
+        )
+        if existing:
+            return existing
+
         txn = Transaction(
             transaction_id=txn_dict["transaction_id"],
             timestamp=ts,
@@ -157,6 +169,14 @@ class FraudRepository:
         )
 
     def save_prediction(self, pred_dict: Dict[str, Any]) -> Prediction:
+        existing = (
+            self.session.query(Prediction)
+            .filter_by(transaction_id=pred_dict["transaction_id"])
+            .first()
+        )
+        if existing:
+            return existing
+
         # Ensure model version exists
         self.register_model_version({
             "version_id": pred_dict.get("model_version_id", "v1.0.0"),
@@ -189,6 +209,14 @@ class FraudRepository:
     # Risk Decisions
     # -------------------------------------------------------------------------
     def save_risk_decision(self, decision_dict: Dict[str, Any]) -> RiskDecision:
+        existing = (
+            self.session.query(RiskDecision)
+            .filter_by(transaction_id=decision_dict["transaction_id"])
+            .first()
+        )
+        if existing:
+            return existing
+
         decision = RiskDecision(
             transaction_id=decision_dict["transaction_id"],
             risk_score=decision_dict["risk_score"],
