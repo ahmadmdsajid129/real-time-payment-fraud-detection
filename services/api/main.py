@@ -57,9 +57,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
+
 # Mount Prometheus Metrics
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
+
+# Mount Web Dashboard
+web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "web")
+if os.path.exists(web_dir):
+    app.mount("/dashboard", StaticFiles(directory=web_dir, html=True), name="dashboard")
 
 # Register API Routes
 app.include_router(router)
@@ -71,6 +79,7 @@ def root():
         "service": "Real-Time Payment Fraud Detection & Risk Engine",
         "version": "1.0.0",
         "documentation": "/docs",
+        "dashboard": "/dashboard",
         "health": "/api/v1/health",
         "metrics": "/metrics",
     }
