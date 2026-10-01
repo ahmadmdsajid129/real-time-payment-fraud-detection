@@ -31,9 +31,10 @@ def run_benchmark(n_requests: int = 250) -> Dict[str, Any]:
     risk_latencies: List[float] = []
 
     start_wall = time.perf_counter()
+    run_id = int(time.time())
 
     for i in range(n_requests):
-        txn_id = f"TXN-BENCH-{i:05d}"
+        txn_id = f"TXN-BENCH-{run_id}-{i:05d}"
         cust_id = f"CUST-BENCH-{i % 25:03d}"
         payload = {
             "transaction_id": txn_id,
@@ -48,7 +49,7 @@ def run_benchmark(n_requests: int = 250) -> Dict[str, Any]:
             "lon": -74.00,
             "device_id": f"DEV-BENCH-{i % 10}",
             "payment_method": "credit_card",
-            "idempotency_key": f"idemp-bench-{i}",
+            "idempotency_key": f"idemp-bench-{run_id}-{i}",
         }
 
         req_start = time.perf_counter()
