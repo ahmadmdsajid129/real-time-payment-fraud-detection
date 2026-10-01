@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - 2026-10-01
+
+### Added
+- **Phase 7 & Phase 8: Behavioral Analytics & Unsupervised Anomaly Detection**:
+  - `ml/src/anomaly/isolation_forest.py`: IsolationForestDetector mapping raw decision margins to a normalized continuous score in $[0.0, 1.0]$.
+  - `ml/src/features/behavioral_profiler.py`: BehavioralProfiler synthesizing customer deviation signals (z-scores, velocity spikes, kinematics, novelty, diurnal patterns) into a composite behavioral risk score.
+  - `ml/train_anomaly.py`: Training script on temporal splits evaluating unsupervised separation and correlation with fraud.
+  - Measured benchmark:
+    - Isolation Forest mean score on legitimate transactions: **`0.0993`** vs. fraudulent transactions: **`0.7233`**.
+    - Unsupervised correlation with ground-truth fraud: **`+0.5820`**.
+    - Behavioral deviation correlation with ground-truth fraud: **`+0.7858`**.
+  - `tests/unit/test_anomaly.py`: 25/25 unit tests passing.
+  - Model artifact exported to `ml/models/saved/isolation_forest_detector.joblib`.
+
 ## [0.5.0] - 2026-10-01
 
 ### Added
