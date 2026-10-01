@@ -1,0 +1,44 @@
+# Machine Learning Experiment Registry
+
+---
+
+## 1. Experiment Registry Protocol
+All experiments in this log follow rigorous scientific methodology:
+- **Hypothesis**: The exact statistical or behavioral thesis being tested.
+- **Methodology**: Algorithms, feature subsets, and loss functions tested.
+- **Temporal Split**: Fixed time-series split ($T_{\text{train}} \le t_1 < T_{\text{val}} \le t_2 < T_{\text{test}}$).
+- **Evaluation Metrics**: PR-AUC, ROC-AUC, Brier Score, and Recall @ 80% Precision.
+- **Status**: Formulated, In-Progress, or Executed.
+
+---
+
+## 2. Quantitative Experiment Tracking Table
+
+| ID | Title / Hypothesis | Primary Model | Calibration | Features Used | PR-AUC | ROC-AUC | Brier Score | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **EXP-001** | Linear baseline with transaction-only features | Logistic Regression | None | Raw Payload (7 features) | Baseline | Baseline | Baseline | Formulated |
+| **EXP-002** | Non-linear tree ensemble baseline | Random Forest (100 trees) | None | Raw Payload (7 features) | Target > EXP-001 | Target > EXP-001 | Target < EXP-001 | Formulated |
+| **EXP-003** | Gradient boosted trees on payload | XGBoost (default) | None | Raw Payload (7 features) | Target > EXP-002 | Target > EXP-002 | Target < EXP-002 | Formulated |
+| **EXP-004** | Impact of behavioral feature enrichment | XGBoost | None | Payload + Behavioral (28 features) | Target +0.15 PR-AUC | Target +0.05 ROC-AUC | Target < 0.03 | Formulated |
+| **EXP-005** | Class imbalance correction via `scale_pos_weight` | XGBoost | None | All Features (28 features) | Evaluate Recall | Evaluate PR-AUC | Target < 0.03 | Formulated |
+| **EXP-006** | Probability calibration comparison (Platt vs. Isotonic) | XGBoost | Platt & Isotonic | All Features (28 features) | Preserves PR-AUC | Preserves ROC-AUC | Minimizes Brier | Formulated |
+| **EXP-007** | Threshold optimization on F2 score vs. Expected Cost | Calibrated XGBoost | Isotonic | All Features (28 features) | Optimizes Cost | N/A | N/A | Formulated |
+| **EXP-008** | Unsupervised anomaly detection integration | Isolation Forest | N/A | Velocity + Amount Space | Outlier Recall | N/A | N/A | Formulated |
+
+---
+
+## 3. Detailed Experiment Protocols
+
+### EXP-001: Logistic Regression Baseline
+- **Hypothesis**: A regularized linear classifier provides an interpretable lower benchmark but will fail to capture non-linear fraud indicators (e.g., high amount *only* when accompanied by an unfamiliar country).
+- **Configuration**: `penalty='l2', C=1.0, solver='lbfgs', max_iter=1000`.
+- **Target Comparison**: Sanity floor vs. Dummy majority class.
+
+### EXP-004: Impact of Behavioral Feature Enrichment
+- **Hypothesis**: Adding sliding-window customer features (Z-score, 1h velocity, new device indicator) will dramatically increase PR-AUC compared to evaluating transactions in isolation.
+- **Independent Variable**: Feature set (7 raw features vs. 28 enriched behavioral features).
+- **Leakage Safeguard**: Features calculated strictly on $t < \text{current\_timestamp}$.
+
+### EXP-006: Probability Calibration (Isotonic vs. Platt Scaling)
+- **Hypothesis**: Raw tree probabilities will show severe overconfidence at boundaries; Isotonic Regression on the validation set will reduce the Brier Score by $\ge 30\%$ without harming ranking order.
+- **Evaluation**: Reliability diagram binning (10 deciles) and Expected Calibration Error (ECE).
