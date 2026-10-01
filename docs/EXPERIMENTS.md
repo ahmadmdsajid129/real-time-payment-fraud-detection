@@ -24,7 +24,7 @@ All experiments in this log follow rigorous scientific methodology:
 | **EXP-005** | Class imbalance correction via `scale_pos_weight` | XGBoost | None | All Features (28 features) | Evaluate Recall | Evaluate PR-AUC | Target < 0.03 | Formulated |
 | **EXP-006** | Probability calibration comparison (Platt vs. Isotonic) | XGBoost | Platt & Isotonic | All Features (30) | 0.9825 | 0.9990 | 0.0028 (ECE 0.0014) | Executed |
 | **EXP-007** | Threshold optimization on F2 score vs. Expected Cost | Calibrated XGBoost | Isotonic | All Features (30) | F2 Thresh 0.070 | Cost Thresh 0.010 | Min Loss INR 1.6k | Executed |
-| **EXP-008** | Unsupervised anomaly detection integration | Isolation Forest | N/A | Velocity + Amount Space | Outlier Recall | N/A | N/A | Formulated |
+| **EXP-008** | Unsupervised anomaly detection integration | Isolation Forest | N/A | Velocity + Amount (11) | Outlier Score | Corr +0.5820 | Fraud Mean 0.7233 | Executed |
 
 ---
 
