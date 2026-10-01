@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Payment Fraud Detection & Risk Engine | Live Forensic Dashboard</title>
+  <meta name="description" content="Production-oriented streaming fraud detection engine with calibrated XGBoost, unsupervised anomaly detection, SHAP local explainability, and multi-factor risk arbitration.">
+  <link rel="stylesheet" href="index.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <h1 class="brand-title">Real-Time Payment Fraud Engine</h1>
+          <p class="brand-subtitle">Distributed Risk Arbitration & Explainable AI Monitoring</p>
+        </div>
+      </div>
+      <div class="system-status-badge">
+        <span class="pulse-dot"></span>
+        <span id="system-status-text">SYSTEM ONLINE (API READY)</span>
+      </div>
+    </header>
+
+    <!-- Top KPI Bar -->
+    <section class="kpi-grid" aria-label="Key Performance Indicators">
+      <article class="kpi-card">
+        <div class="kpi-title">Total Volume Evaluated</div>
+        <div class="kpi-value" id="kpi-total-volume">$0.00</div>
+        <div class="kpi-subtitle" id="kpi-total-txns">0 transactions</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-title">Fraud Block Rate</div>
+        <div class="kpi-value" id="kpi-block-rate" style="color: var(--status-block);">0.0%</div>
+        <div class="kpi-subtitle" id="kpi-blocked-count">0 blocked transactions</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-title">Analyst Review Queue</div>
+        <div class="kpi-value" id="kpi-review-queue" style="color: var(--status-review);">0</div>
+        <div class="kpi-subtitle">Transactions awaiting manual audit</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-title">Average Risk Score</div>
+        <div class="kpi-value" id="kpi-avg-score">0.0</div>
+        <div class="kpi-subtitle">Multi-factor 0–100 scale</div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-title">P95 Inference Latency</div>
+        <div class="kpi-value" id="kpi-latency" style="color: var(--accent-cyan);">14.2ms</div>
+        <div class="kpi-subtitle">Feature + ML + Decision SLA</div>
+      </article>
+    </section>
+
+    <!-- Action & Simulator Toolbar -->
+    <section class="toolbar-section">
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="ALL" id="filter-all">All Decisions</button>
+        <button class="filter-btn" data-filter="APPROVE" id="filter-approve">Approved</button>
+        <button class="filter-btn" data-filter="REVIEW" id="filter-review">Review</button>
+        <button class="filter-btn" data-filter="BLOCK" id="filter-block">Blocked</button>
+      </div>
+
+      <div class="simulator-controls">
+        <label for="scenario-select" style="font-size: 0.82rem; color: var(--text-dim);">Simulate Scenario:</label>
+        <select id="scenario-select" class="select-scenario">
+          <option value="normal">Normal Cardholder Purchase</option>
+          <option value="velocity_spike">High-Speed Velocity Attack</option>
+          <option value="impossible_travel">Impossible Travel (Speed > 900 km/h)</option>
+          <option value="account_takeover">Account Takeover (New Device + High Amount)</option>
+          <option value="luxury_burst">Sudden Luxury Jewelry Surge</option>
+        </select>
+        <button id="btn-simulate" class="btn-primary">⚡ Send Test Transaction</button>
+        <button id="btn-toggle-stream" class="btn-secondary">▶ Start Live Feed</button>
+      </div>
+    </section>
+
+    <!-- Analytics Charts Row -->
+    <section class="analytics-row">
+      <!-- Live Transaction Monitor Table -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">📡 Real-Time Transaction Stream</h2>
+          <span style="font-size: 0.8rem; color: var(--text-dim);" id="stream-counter">Tracking active events</span>
+        </div>
+        <div class="table-container">
+          <table class="transactions-table" id="table-transactions">
+            <thead>
+              <tr>
+                <th>Time (UTC)</th>
+                <th>Transaction ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Geo / Channel</th>
+                <th>Decision</th>
+                <th>Risk Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-body">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 2rem;">
+                  Loading transactions from fraud engine backend...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Risk Score Distribution Histogram -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">📊 Risk Score Distribution</h2>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 1rem;">
+          Histogram of multi-factor scores triaged into Approve (<30), Review (30-75), and Block (>=75).
+        </p>
+        <canvas id="risk-chart" width="400" height="260"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <!-- Forensic Deep-Dive Modal -->
+  <div class="modal-overlay" id="investigation-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); letter-spacing: 0.08em;">Forensic Audit Dossier</span>
+          <h2 style="font-size: 1.4rem; color: #fff; margin-top: 0.2rem;" id="modal-txn-id">TXN-XXXXXX</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);" id="modal-meta-info">Customer: CUST-XXXX | Amount: $0.00</p>
+        </div>
+        <div id="modal-decision-badge"></div>
+      </div>
+
+      <!-- Risk Factor Multi-Signal Cards -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Calibrated ML</div>
+          <div style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-top: 0.2rem;" id="modal-signal-ml">0.0%</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Weight: 55%</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Anomaly Score</div>
+          <div style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-top: 0.2rem;" id="modal-signal-anom">0.00</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Weight: 15%</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Behavioral Deviation</div>
+          <div style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-top: 0.2rem;" id="modal-signal-behav">0.00</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Weight: 15%</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; text-align: center;">
+          <div style="font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase;">Rule Triggers</div>
+          <div style="font-size: 1.25rem; font-weight: 700; color: #fff; margin-top: 0.2rem;" id="modal-signal-rules">0</div>
+          <div style="font-size: 0.7rem; color: var(--text-muted);">Weight: 15%</div>
+        </div>
+      </div>
+
+      <!-- Triggered Rules List -->
+      <div style="margin-bottom: 1.5rem;" id="modal-rules-container">
+        <h3 style="font-size: 0.92rem; color: #fff; margin-bottom: 0.5rem;">🚨 Heuristic Policy Triggers</h3>
+        <div id="modal-rules-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="font-size: 0.82rem; color: var(--text-dim);">No rules triggered. Clean transaction.</span>
+        </div>
+      </div>
+
+      <!-- SHAP Explainability Waterfall -->
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 0.92rem; color: #fff; margin-bottom: 0.4rem;">🔬 SHAP Feature Impact (Local Attribution)</h3>
+        <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 0.75rem;">
+          Real TreeExplainer values showing which behavioral features drove the risk score up (red) or down (green).
+        </p>
+        <div class="waterfall-container" id="modal-shap-container">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Customer Baseline Profile -->
+      <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 0.92rem; color: #fff; margin-bottom: 0.6rem;">👤 Customer 360 Baseline (Zero Leakage)</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; font-size: 0.82rem;" id="modal-customer-info">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Analyst Review Action Box -->
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+        <h3 style="font-size: 0.92rem; color: #fff; margin-bottom: 0.6rem;">✍️ Analyst Review Action</h3>
+        <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem;">
+          <input type="text" id="analyst-notes" placeholder="Enter investigation notes (e.g. Cardholder confirmed identity via 2FA)..." style="flex: 1; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.6rem 0.9rem; color: #fff; font-size: 0.82rem; outline: none;">
+          <button id="btn-submit-legit" style="background: var(--status-approve-bg); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--status-approve); font-weight: 600; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer;">Mark Legitimate</button>
+          <button id="btn-submit-fraud" style="background: var(--status-block-bg); border: 1px solid rgba(244, 63, 94, 0.4); color: var(--status-block); font-weight: 600; padding: 0.6rem 1.2rem; border-radius: var(--radius-md); cursor: pointer;">Confirm Fraud</button>
+        </div>
+        <div id="analyst-feedback-alert" style="font-size: 0.8rem; display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
