@@ -6,8 +6,11 @@ Emits data/processed/drift_report.json.
 
 import json
 import os
+import sys
 import numpy as np
 import pandas as pd
+
+sys.path.insert(0, os.path.abspath("."))
 
 from ml.src.monitoring.drift_detector import DataDriftDetector
 from ml.src.features.feature_definitions import NUMERICAL_FEATURES
