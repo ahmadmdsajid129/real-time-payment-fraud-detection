@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2026-10-01
+
+### Added
+- **Phase 9: Multi-Factor Risk Engine & Decision Policy**:
+  - `services/risk_engine/rules.py`: Deterministic RuleEngine evaluating 8 heuristic fraud vectors (impossible travel, velocity bursts, account takeover, new country, device sharing, off-hours large spend) emitting normalized severity penalties.
+  - `services/risk_engine/cost_model.py`: FinancialCostModel calculating asymmetric expected losses for Approve (chargeback fee + lost amount), Block (customer insult/churn), and Review.
+  - `services/risk_engine/engine.py`: Configurable RiskEngine synthesizing calibrated ML probability ($0.55$), anomaly score ($0.15$), behavioral volatility ($0.15$), and rules ($0.15$) into an arbitrated 0–100 risk score and triaging decisions (`APPROVE`, `REVIEW`, `BLOCK`).
+  - `tests/unit/test_risk_engine.py`: Tests validating score boundary clamping ($[0.0, 100.0]$), decision policy mappings, and rule triggers (29/29 unit tests passing).
+
 ## [0.6.0] - 2026-10-01
 
 ### Added
