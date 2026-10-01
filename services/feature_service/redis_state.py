@@ -9,6 +9,15 @@ from datetime import datetime, timezone
 import json
 from typing import Dict, Any, List, Set, Optional
 
+def _to_epoch(ts: Any) -> float:
+    if isinstance(ts, (int, float)):
+        return float(ts)
+    if isinstance(ts, datetime):
+        return ts.timestamp()
+    if isinstance(ts, str):
+        return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+    raise ValueError(f"Unsupported timestamp format: {ts}")
+
 
 class RedisStateManager:
     """Manages customer rolling velocity, known entities, and idempotency in Redis."""
@@ -87,11 +96,10 @@ class RedisStateManager:
         # In-memory fallback
         all_hist = self._mock_windows.get(customer_id, [])
         for e in all_hist:
-            ts = e["timestamp"]
-            ts_epoch = ts.timestamp() if isinstance(ts, datetime) else float(ts)
+            ts_epoch = _to_epoch(e["timestamp"])
             if ts_epoch < before_timestamp_epoch:
                 events.append(e)
-        events.sort(key=lambda x: x["timestamp"] if isinstance(x["timestamp"], (int, float)) else x["timestamp"].timestamp())
+        events.sort(key=lambda x: _to_epoch(x["timestamp"]))
         return events
 
     def get_known_devices(self, customer_id: str) -> Set[str]:
@@ -122,7 +130,7 @@ class RedisStateManager:
         all_dev_txns = self._mock_device_txns.get(device_id, [])
         valid = []
         for d in all_dev_txns:
-            ts_epoch = d["timestamp"].timestamp() if isinstance(d["timestamp"], datetime) else float(d["timestamp"])
+            ts_epoch = _to_epoch(d["timestamp"])
             if threshold <= ts_epoch < before_timestamp_epoch:
                 valid.append(d)
         return valid
@@ -136,7 +144,7 @@ class RedisStateManager:
         dev_id = txn_payload["device_id"]
         country = txn_payload["country"]
         ts = txn_payload["timestamp"]
-        ts_epoch = ts.timestamp() if isinstance(ts, datetime) else float(ts)
+        ts_epoch = _to_epoch(ts)
 
         item_dict = {
             "timestamp": ts,
