@@ -94,9 +94,18 @@ class FeatureExtractor:
         }
 
         # 2. Customer Behavioral History Aggregations
-        history = customer_history or []
-        # Filter strictly past events if any slip in
-        history = [h for h in history if h["timestamp"] < ts]
+        raw_history = customer_history or []
+        history = []
+        for h in raw_history:
+            h_ts = h["timestamp"]
+            if not isinstance(h_ts, pd.Timestamp):
+                h_ts = pd.to_datetime(h_ts)
+            if ts.tz is not None and getattr(h_ts, "tz", None) is None:
+                h_ts = h_ts.tz_localize("UTC")
+            elif ts.tz is None and getattr(h_ts, "tz", None) is not None:
+                h_ts = h_ts.tz_localize(None)
+            if h_ts < ts:
+                history.append({**h, "timestamp": h_ts})
 
         if not history:
             # Cold-start customer
@@ -167,6 +176,12 @@ class FeatureExtractor:
             # Kinematics relative to immediately preceding transaction
             last_event = history[-1]
             last_ts = last_event["timestamp"]
+            if not isinstance(last_ts, pd.Timestamp):
+                last_ts = pd.to_datetime(last_ts)
+            if ts.tz is not None and getattr(last_ts, "tz", None) is None:
+                last_ts = last_ts.tz_localize("UTC")
+            elif ts.tz is None and getattr(last_ts, "tz", None) is not None:
+                last_ts = last_ts.tz_localize(None)
             delta_sec = max(0.5, (ts - last_ts).total_seconds())
             features["time_since_prev_txn"] = round(delta_sec, 1)
 
@@ -181,7 +196,17 @@ class FeatureExtractor:
 
         # 3. Device Ecosystem Sharing
         dev_history = device_history or []
-        dev_history_24h = [d for d in dev_history if (ts - d["timestamp"]).total_seconds() <= 86400.0]
+        dev_history_24h = []
+        for d in dev_history:
+            d_ts = d["timestamp"]
+            if not isinstance(d_ts, pd.Timestamp):
+                d_ts = pd.to_datetime(d_ts)
+            if ts.tz is not None and getattr(d_ts, "tz", None) is None:
+                d_ts = d_ts.tz_localize("UTC")
+            elif ts.tz is None and getattr(d_ts, "tz", None) is not None:
+                d_ts = d_ts.tz_localize(None)
+            if (ts - d_ts).total_seconds() <= 86400.0:
+                dev_history_24h.append(d)
         unique_custs_on_device = len({d["customer_id"] for d in dev_history_24h})
         features["device_customer_count"] = max(1, unique_custs_on_device)
 
