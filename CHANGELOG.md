@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2026-10-01
+
+### Added
+- **Phase 3: Baseline ML Models & Temporal Validation**:
+  - `ml/src/data/splitter.py`: Chronological temporal splitter (70% Train, 15% Val, 15% Test) guaranteeing zero lookahead overlap ($T_{\text{train}} \le t_1 < T_{\text{val}} \le t_2 < T_{\text{test}}$).
+  - `ml/src/evaluation/metrics.py`: Metrics engine calculating PR-AUC, ROC-AUC, Precision, Recall, F1-Score, Brier score, Confusion Matrix, FPR, and FNR.
+  - `ml/src/models/baselines.py`: Dummy majority prior model, L2-regularized Logistic Regression baseline with training-only standard scaling, and non-linear Random Forest tree ensemble (100 trees).
+  - `ml/train_baselines.py`: Training and evaluation pipeline saving models to `ml/models/saved/` and recording empirical test results in `docs/EXPERIMENTS.md`.
+  - Benchmarked test results:
+    - Dummy: PR-AUC 0.0271, ROC-AUC 0.5000, F1 0.0000.
+    - Logistic Regression: PR-AUC 0.9222, ROC-AUC 0.9947, Recall 0.9836, Precision 0.4511, Brier 0.0320.
+    - Random Forest: PR-AUC 0.9858, ROC-AUC 0.9989, Recall 0.8361, Precision 1.0000, Brier 0.0032.
+  - `tests/unit/test_baselines.py`: 17/17 total unit tests passing.
+
 ## [0.2.0] - 2026-10-01
 
 ### Added

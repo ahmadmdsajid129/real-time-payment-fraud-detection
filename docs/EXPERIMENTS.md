@@ -16,8 +16,9 @@ All experiments in this log follow rigorous scientific methodology:
 
 | ID | Title / Hypothesis | Primary Model | Calibration | Features Used | PR-AUC | ROC-AUC | Brier Score | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **EXP-001** | Linear baseline with transaction-only features | Logistic Regression | None | Raw Payload (7 features) | Baseline | Baseline | Baseline | Formulated |
-| **EXP-002** | Non-linear tree ensemble baseline | Random Forest (100 trees) | None | Raw Payload (7 features) | Target > EXP-001 | Target > EXP-001 | Target < EXP-001 | Formulated |
+| **EXP-000** | Majority class prior floor | Dummy Classifier | None | All Features (30) | 0.0271 | 0.5000 | 0.0264 | Executed |
+| **EXP-001** | Linear baseline with standard scaling | Logistic Regression (L2) | None | All Features (30) | 0.9222 | 0.9947 | 0.0320 | Executed |
+| **EXP-002** | Non-linear tree ensemble baseline | Random Forest (100 trees) | None | All Features (30) | 0.9858 | 0.9989 | 0.0032 | Executed |
 | **EXP-003** | Gradient boosted trees on payload | XGBoost (default) | None | Raw Payload (7 features) | Target > EXP-002 | Target > EXP-002 | Target < EXP-002 | Formulated |
 | **EXP-004** | Impact of behavioral feature enrichment | XGBoost | None | Payload + Behavioral (28 features) | Target +0.15 PR-AUC | Target +0.05 ROC-AUC | Target < 0.03 | Formulated |
 | **EXP-005** | Class imbalance correction via `scale_pos_weight` | XGBoost | None | All Features (28 features) | Evaluate Recall | Evaluate PR-AUC | Target < 0.03 | Formulated |
