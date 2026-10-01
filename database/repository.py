@@ -94,7 +94,7 @@ class FraudRepository:
             city=txn_dict.get("city", "Unknown"),
         )
 
-        ts = txn_dict["timestamp"]
+        ts = txn_dict.get("timestamp", datetime.now(timezone.utc))
         if isinstance(ts, str):
             ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
 
