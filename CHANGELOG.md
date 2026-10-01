@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2026-10-01
+
+### Added
+- **Phase 5 & Phase 6: Probability Calibration & Cost-Sensitive Thresholds**:
+  - `ml/src/calibration/calibrator.py`: ProbabilityCalibrator implementing Isotonic Regression and Platt Sigmoid calibration with Expected Calibration Error (ECE) and reliability diagram binning.
+  - `ml/src/evaluation/cost_optimization.py`: ThresholdOptimizer evaluating precision-recall tradeoffs via $F_2$ score maximization and total financial loss minimization ($C_{\text{FN}} = \text{amount} + \$25$, $C_{\text{FP}} = \$35$).
+  - `ml/train_calibration.py`: Complete calibration training on the chronological validation split and evaluation on the held-out test split.
+  - Measured benchmark:
+    - Isotonic Regression reduces Expected Calibration Error (ECE) to **`0.0014`** (half of raw XGBoost's `0.0031`).
+    - Optimal $F_2$ operational cutoff determined at **`0.070`** (Recall = $95.1\%$, Precision = $93.5\%$).
+    - Optimal financial cost cutoff determined at **`0.010`**.
+  - `tests/unit/test_calibration.py`: 23/23 unit tests passing.
+  - Calibrated model artifact exported to `ml/models/saved/calibrator_isotonic.joblib`.
+
 ## [0.4.0] - 2026-10-01
 
 ### Added
