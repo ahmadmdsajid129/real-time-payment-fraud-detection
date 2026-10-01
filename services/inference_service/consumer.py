@@ -59,7 +59,8 @@ class MLInferenceWorker:
                 self.model = joblib.load(xgb_path)
                 logger.info("Loaded XGBoost champion model from %s", xgb_path)
                 try:
-                    self.shap_explainer = shap.TreeExplainer(self.model)
+                    underlying = getattr(self.model, "model", self.model)
+                    self.shap_explainer = shap.TreeExplainer(underlying)
                     logger.info("Initialized TreeExplainer for SHAP local attributions")
                 except Exception as e:
                     logger.warning("Could not initialize TreeExplainer: %s", e)
@@ -114,24 +115,33 @@ class MLInferenceWorker:
 
         # 1. Supervised XGBoost Inference
         if self.model is not None:
-            raw_proba = float(self.model.predict_proba(X_df)[0, 1])
+            p = self.model.predict_proba(X_df)
+            raw_proba = float(p[0]) if p.ndim == 1 else float(p[0, 1])
         else:
             raw_proba = 0.05
 
         # 2. Probability Calibration
         if self.calibrator is not None:
-            calibrated_p = float(self.calibrator.predict(np.array([raw_proba]))[0])
+            if hasattr(self.calibrator, "predict_proba"):
+                calibrated_p = float(self.calibrator.predict_proba(np.array([raw_proba]))[0])
+            else:
+                calibrated_p = float(self.calibrator.predict(np.array([raw_proba]))[0])
         else:
             calibrated_p = raw_proba
 
         # 3. Unsupervised Anomaly Scoring
         if self.anomaly_detector is not None:
-            anomaly_score = float(self.anomaly_detector.predict_score(X_df)[0])
+            if hasattr(self.anomaly_detector, "score"):
+                anomaly_score = float(self.anomaly_detector.score(X_df)[0])
+            elif hasattr(self.anomaly_detector, "score_single"):
+                anomaly_score = float(self.anomaly_detector.score_single(features))
+            else:
+                anomaly_score = 0.1
         else:
             anomaly_score = 0.1
 
         # 4. Behavioral Profiling Score
-        behav_score = float(self.profiler.compute_behavioral_score(features))
+        behav_score, _ = self.profiler.score_behavior(features)
 
         # 5. Local SHAP Attribution
         pos_drivers, neg_drivers = self.compute_shap_drivers(X_df)
