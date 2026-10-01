@@ -130,7 +130,7 @@ def score_transaction(
     )
     risk_latency = (time.perf_counter() - r_start) * 1000.0
 
-    triggered_names = [r.rule_name for r in decision.triggered_rules]
+    triggered_names = [getattr(r, "rule_code", getattr(r, "rule_name", str(r))) for r in decision.triggered_rules]
 
     # 4. Database Persistence
     repo = FraudRepository(db)
