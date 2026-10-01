@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-10-01
+
+### Added
+- **Phase 2: Feature Engineering & Zero-Leakage Pipeline**:
+  - `ml/src/features/feature_definitions.py`: Catalog of 30+ engineered feature names, numerical/binary groupings, and cold-start defaults.
+  - `ml/src/features/feature_extractor.py`: Real-time streaming and chronological batch feature extractor computing sliding-window velocity counters (1m, 5m, 15m, 1h, 24h, 7d), spending z-scores, Haversine travel speeds, impossible travel flags, and device sharing counts.
+  - Strict zero-leakage invariant: historical customer state evaluated exclusively on transactions prior to current event.
+  - `ml/src/features/build_features.py`: Batch feature extraction script producing `data/processed/features_dataset.parquet`.
+  - `tests/unit/test_features.py`: Unit tests validating zero temporal leakage guarantees, z-score math, cold-start defaults, and kinematics (14/14 unit tests passing).
+
 ## [0.1.0] - 2026-10-01
 
 ### Added
