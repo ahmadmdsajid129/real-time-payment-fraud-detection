@@ -163,3 +163,106 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  # ============================================================================
+  # 3. Application Services & Streaming Workers
+  # ============================================================================
+
+  fraud-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres_dev_password@postgres:5432/fraud_engine
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  feature-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-feature-service
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    command: ["python", "services/feature_service/consumer.py"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+  inference-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-inference-service
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    command: ["python", "services/inference_service/consumer.py"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+  risk-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-risk-engine
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    command: ["python", "services/risk_engine/consumer.py"]
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres_dev_password@postgres:5432/fraud_engine
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+  transaction-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fraud-generator
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - fraud-net
+    command: ["python", "services/transaction_generator/producer.py", "--count", "500", "--rate", "2.0"]
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
