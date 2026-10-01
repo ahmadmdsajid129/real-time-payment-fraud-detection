@@ -169,6 +169,7 @@ def score_transaction(
         "cost_estimate_fn": decision.expected_costs.get("cost_of_false_negative", 0.0),
         "cost_estimate_fp": decision.expected_costs.get("cost_of_false_positive", 0.0),
     })
+    db.commit()
 
     # 5. Commit post-decision state to Redis
     state_manager.update_state_post_decision(raw_payload)
@@ -346,6 +347,7 @@ def submit_analyst_feedback(req: FeedbackRequest, db: Session = Depends(get_db))
         actual_label=req.actual_label,
         notes=req.notes,
     )
+    db.commit()
     return FeedbackResponse(
         status="RECORDED",
         transaction_id=feedback.transaction_id,
