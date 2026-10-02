@@ -321,6 +321,31 @@ Every question follows a structured format:
 - **WHERE IT APPEARS IN THIS PROJECT**: `frontend/` directory; `docs/PRD.md` Persona 1.
 
 ### Q51. What is the Whiteboard Walkthrough of this complete platform?
-- **SHORT ANSWER**: Incoming event $\to$ Kafka (`transactions.raw`) $\to$ Feature Service reads previous Redis state $\to$ Ingests into ML ensemble (XGBoost) $\to$ Calibrates probability $\to$ Evaluates Isolation Forest anomaly $\to$ Risk Engine applies rules and cost weights to produce 0–100 score $\to$ Decisions triaged into `APPROVE`/`REVIEW`/`BLOCK` $\to$ Durable audit in PostgreSQL $\to$ Visualized in Next.js with SHAP $\to$ Monitored in Prometheus/Grafana.
+- **SHORT ANSWER**: Incoming event $\to$ Kafka (`transactions.raw`) $\to$ Feature Service reads previous Redis state $\to$ Ingests into ML ensemble (XGBoost) $\to$ Calibrates probability $\to$ Evaluates Isolation Forest anomaly $\to$ Risk Engine applies rules and cost weights to produce 0–100 score $\to$ Decisions triaged into `APPROVE`/`REVIEW`/`BLOCK` $\to$ Durable audit in PostgreSQL $\to$ Visualized in React + Tailwind with SHAP $\to$ Monitored in Prometheus/Grafana.
 - **DEEP EXPLANATION**: The complete end-to-end integration proving systems engineering, applied machine learning, distributed state caching, and operational explainability.
 - **WHERE IT APPEARS IN THIS PROJECT**: Master architecture diagram in `README.md` and `docs/ARCHITECTURE.md`.
+
+---
+
+## Category 14: Security Hardening, Empirical Benchmarks & UI Engineering
+
+### Q52. What is the defense-in-depth security model implemented in this fraud engine?
+- **SHORT ANSWER**: Comprehensive OWASP mitigation: 100% parameterized SQLAlchemy ORM queries (zero SQLi), strict Pydantic range and length constraints, OWASP SecurityHeadersMiddleware (`nosniff`, `DENY` frames, HSTS), SHA-256 idempotency hashing, and PII masking.
+- **DEEP EXPLANATION**: Financial backends require multi-layered defense. At the network boundary, custom ASGI middleware strips frame permissions and forces TLS. At the serialization boundary, Pydantic rejects out-of-range floats ($> \$10\text{M}$) and oversized strings ($> 128$ characters) to prevent algorithmic DoS. At the data layer, IP addresses and card tokens are anonymized before persistent or log export.
+- **WHERE IT APPEARS IN THIS PROJECT**: `services/security/masking.py`, `services/api/main.py` (`SecurityHeadersMiddleware`), and `docs/SECURITY_AUDIT_REPORT.md`.
+
+### Q53. How does the modern React + Tailwind frontend architecture interact with the low-latency backend?
+- **SHORT ANSWER**: A componentized Vite + React architecture utilizing Tailwind CSS glassmorphic tokens, optimistic transaction feed updates, interactive scenario injection toolbars, and on-demand TreeSHAP waterfall rendering.
+- **DEEP EXPLANATION**: Rather than traditional full-page refreshes, the React dashboard maintains an in-memory sliding buffer of the 30 most recent evaluated transactions. When an analyst injects an attack vector (e.g., Impossible Travel), the optimistic UI immediately reflects the incoming scored event, requests local SHAP drivers asynchronously via `/api/v1/transactions/{id}/explanation`, and submits ground-truth labels directly to `/api/v1/feedback`.
+- **WHERE IT APPEARS IN THIS PROJECT**: `frontend/src/App.jsx`, `frontend/src/components/`, mounted in FastAPI at `/dashboard`.
+
+### Q54. What empirical latency and throughput SLA was achieved in benchmark testing?
+- **SHORT ANSWER**: Tested on 250 held-out live simulated transactions: Feature Enrichment p50 = 16.07 ms (p95 = 32.04 ms), ML Inference + SHAP p50 = 29.86 ms (p95 = 39.88 ms), Risk Arbitration p50 = 0.07 ms (p95 = 0.10 ms), Total HTTP roundtrip p50 = 65.59 ms (p95 = 92.24 ms) with 100% success rate.
+- **DEEP EXPLANATION**: The pipeline meets sub-100ms real-time requirements on modest hardware. The primary bottleneck is TreeSHAP local tree path traversal (~30ms), which is executed in-process. Risk arbitration is sub-millisecond ($< 0.1$ ms) due to pre-compiled rule predicates and in-memory cost matrices.
+- **WHERE IT APPEARS IN THIS PROJECT**: `benchmarks/latency_benchmark.py` and `docs/BENCHMARK_REPORT.md`.
+
+### Q55. How does the engine handle cold-start entities and device syndicate rings?
+- **SHORT ANSWER**: Bayesian shrinkage pulls new cardholder baseline estimates toward global population priors based on transaction count; cross-account device sharing is tracked in Redis sets to flag multi-identity emulators.
+- **DEEP EXPLANATION**: For a customer with $N=1$ transaction, their sample mean is uninformative. The Bayesian shrinkage formula $\hat{\mu} = \frac{N}{N + K}\bar{x} + \frac{K}{N + K}\mu_0$ (with $K=5$) smoothly transitions from population baseline to personal baseline as transaction history matures. Simultaneously, `services/risk_engine/entity_resolution.py` inspects device-to-account ratios ($> 3$ unique customers on one device in 24h) to isolate organized fraud syndicates.
+- **WHERE IT APPEARS IN THIS PROJECT**: `services/risk_engine/entity_resolution.py` and `tests/unit/test_entity_resolution.py`.
+
