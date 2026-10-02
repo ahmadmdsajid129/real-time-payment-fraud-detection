@@ -38,18 +38,19 @@ export async function fetchDashboardSummary() {
   }
 }
 
-export async function fetchTransactions(limit = 25, offset = 0, decision = null) {
+export async function fetchTransactions(limit = 30, offset = 0, decision = null) {
   try {
-    let url = `${API_BASE}/transactions?limit=${limit}&offset=${offset}`;
+    let url = `${API_BASE}/dashboard/recent-transactions?limit=${limit}`;
     if (decision && decision !== 'ALL') {
       url += `&decision=${decision}`;
     }
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.items || []);
   } catch (err) {
     console.warn("Failed fetching transactions:", err);
-    return { items: [], total: 0, limit, offset };
+    return null;
   }
 }
 
