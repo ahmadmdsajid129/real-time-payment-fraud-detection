@@ -85,9 +85,13 @@ from fastapi.responses import RedirectResponse
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
 
-# Mount Web Dashboard
+# Mount Web Dashboard (React + Tailwind production build with web fallback)
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
 web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "web")
-if os.path.exists(web_dir):
+
+if os.path.exists(frontend_dist):
+    app.mount("/dashboard", StaticFiles(directory=frontend_dist, html=True), name="dashboard")
+elif os.path.exists(web_dir):
     app.mount("/dashboard", StaticFiles(directory=web_dir, html=True), name="dashboard")
 
 # Register API Routes
