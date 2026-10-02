@@ -8,12 +8,30 @@ import json
 import logging
 import os
 import queue
+import socket
 import threading
 from typing import Dict, Any, Optional, Callable
 
 logger = logging.getLogger(__name__)
 
 KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
+
+def _check_broker_reachable(bootstrap_servers: str) -> bool:
+    """Quickly probes if any broker host:port is reachable to prevent long connection timeouts."""
+    for server in bootstrap_servers.split(","):
+        server = server.strip()
+        if not server:
+            continue
+        parts = server.split(":")
+        host = parts[0]
+        port = int(parts[1]) if len(parts) > 1 else 9092
+        try:
+            with socket.create_connection((host, port), timeout=0.08):
+                return True
+        except (socket.timeout, ConnectionRefusedError, OSError):
+            continue
+    return False
 
 
 class InMemoryEventBus:
@@ -71,6 +89,9 @@ class StreamProducer:
         self._init_producer()
 
     def _init_producer(self):
+        if not _check_broker_reachable(self.bootstrap_servers):
+            self.is_connected = False
+            return
         try:
             from kafka import KafkaProducer
             self.kafka_producer = KafkaProducer(
@@ -117,6 +138,9 @@ class StreamConsumer:
         self._init_consumer()
 
     def _init_consumer(self):
+        if not _check_broker_reachable(self.bootstrap_servers):
+            self.is_connected = False
+            return
         try:
             from kafka import KafkaConsumer
             self.kafka_consumer = KafkaConsumer(
