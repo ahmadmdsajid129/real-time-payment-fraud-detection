@@ -6,6 +6,11 @@ Configures CORS, life cycle events, Prometheus metrics, and REST routes.
 from contextlib import asynccontextmanager
 import logging
 import os
+import sys
+
+# Ensure workspace root is in sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
