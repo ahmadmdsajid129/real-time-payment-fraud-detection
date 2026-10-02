@@ -15,6 +15,10 @@
 > **Enterprise-Grade Technical Portfolio Project**  
 > A high-throughput, low-latency streaming pipeline combining **Supervised ML (Champion XGBoost), Probability Calibration (Isotonic Regression), Unsupervised Anomaly Detection (Isolation Forest), In-Memory Sliding State (Redis), Explainable AI (TreeSHAP), and Deterministic Heuristic Rules** to score and triage credit card transactions into **APPROVE**, **REVIEW**, or **BLOCK** decisions under an empirical **sub-80ms p95 SLA**.
 
+<p align="center">
+  <img src="docs/images/dashboard_demo.gif" alt="Real-Time Payment Fraud Forensic Dashboard" width="100%" />
+</p>
+
 ---
 
 ## 📑 Table of Contents
@@ -221,6 +225,10 @@ Where default weights sum strictly to $1.0$:
 ---
 
 ## 6. Modern React 19 + Tailwind CSS Forensic Dashboard
+
+<p align="center">
+  <img src="docs/images/dashboard_preview.png" alt="Forensic Investigation Dashboard Preview" width="100%" />
+</p>
 
 The user-facing dashboard is located in `frontend/` and built with a modern stack (**React 19**, **Tailwind CSS v3**, **Vite**, and **Lucide Icons**):
 
