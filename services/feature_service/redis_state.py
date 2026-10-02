@@ -43,6 +43,14 @@ class RedisStateManager:
             self.is_connected = True
             return
         try:
+            import socket
+            with socket.create_connection((self.host, self.port), timeout=0.08):
+                pass
+        except Exception:
+            self.is_connected = False
+            return
+
+        try:
             import redis  # pyrefly: ignore [missing-import]  # type: ignore
             r = redis.Redis(host=self.host, port=self.port, db=self.db, socket_timeout=0.5)
             r.ping()
