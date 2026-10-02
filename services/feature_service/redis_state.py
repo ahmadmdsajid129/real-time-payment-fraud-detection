@@ -43,7 +43,7 @@ class RedisStateManager:
             self.is_connected = True
             return
         try:
-            import redis
+            import redis  # pyrefly: ignore [missing-import]  # type: ignore
             r = redis.Redis(host=self.host, port=self.port, db=self.db, socket_timeout=0.5)
             r.ping()
             self.client = r
