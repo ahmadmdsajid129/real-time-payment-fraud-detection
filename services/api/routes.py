@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import time
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from database.connection import get_db
