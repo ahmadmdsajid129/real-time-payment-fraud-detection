@@ -312,8 +312,9 @@ def get_dashboard_summary(db: Session = Depends(get_db)):
 
 
 @router.get("/dashboard/recent-transactions")
+@router.get("/transactions")
 def get_recent_transactions(
-    limit: int = Query(default=20, le=100),
+    limit: int = Query(default=30, le=100),
     decision: Optional[str] = None,
     customer_id: Optional[str] = None,
     db: Session = Depends(get_db),
