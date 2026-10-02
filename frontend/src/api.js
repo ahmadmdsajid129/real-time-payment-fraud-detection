@@ -2,7 +2,8 @@
  * API client connecting React frontend to the FastAPI Fraud Engine backend.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && window.location.port === '8000' ? '/api/v1' : 'http://localhost:8000/api/v1');
 
 export async function fetchHealth() {
   try {
