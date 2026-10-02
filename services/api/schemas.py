@@ -29,20 +29,20 @@ class HealthResponse(BaseModel):
 # Transactions & Scoring
 # -----------------------------------------------------------------------------
 class TransactionScoreRequest(BaseModel):
-    transaction_id: str = Field(...)
-    timestamp: Optional[str] = Field(default=None)
-    customer_id: str = Field(...)
-    merchant_id: str = Field(default="MERCH-4091")
-    amount: float = Field(..., gt=0.0)
-    currency: str = Field(default="USD")
-    country: str = Field(default="US")
-    city: str = Field(default="New York")
-    lat: Optional[float] = Field(default=40.7128)
-    lon: Optional[float] = Field(default=-74.0060)
-    device_id: str = Field(default="DEV-MOBILE-01")
-    payment_method: str = Field(default="credit_card")
-    ip_address: Optional[str] = Field(default="192.168.1.1")
-    idempotency_key: Optional[str] = None
+    transaction_id: str = Field(..., min_length=1, max_length=128)
+    timestamp: Optional[str] = Field(default=None, max_length=64)
+    customer_id: str = Field(..., min_length=1, max_length=128)
+    merchant_id: str = Field(default="MERCH-4091", max_length=128)
+    amount: float = Field(..., gt=0.0, le=10_000_000.0)
+    currency: str = Field(default="USD", min_length=3, max_length=3)
+    country: str = Field(default="US", min_length=2, max_length=2)
+    city: str = Field(default="New York", max_length=100)
+    lat: Optional[float] = Field(default=40.7128, ge=-90.0, le=90.0)
+    lon: Optional[float] = Field(default=-74.0060, ge=-180.0, le=180.0)
+    device_id: str = Field(default="DEV-MOBILE-01", max_length=128)
+    payment_method: str = Field(default="credit_card", max_length=64)
+    ip_address: Optional[str] = Field(default="192.168.1.1", max_length=64)
+    idempotency_key: Optional[str] = Field(default=None, max_length=256)
 
 
 class LatencyBreakdown(BaseModel):
@@ -142,10 +142,10 @@ class DashboardSummaryResponse(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
-    transaction_id: str
-    analyst_id: str
+    transaction_id: str = Field(..., min_length=1, max_length=128)
+    analyst_id: str = Field(..., min_length=1, max_length=128)
     actual_label: str = Field(..., pattern="^(FRAUD|LEGITIMATE)$")
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(default=None, max_length=1000)
 
 
 class FeedbackResponse(BaseModel):
