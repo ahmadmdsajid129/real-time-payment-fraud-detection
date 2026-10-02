@@ -26,8 +26,13 @@ export default function App() {
       ]);
       setHealth(h);
       setSummary(s);
-      if (t?.items) {
-        setTransactions(t.items);
+      if (Array.isArray(t)) {
+        setTransactions(prev => {
+          // Deduplicate and merge database transactions with recent live in-flight events
+          const fetchedIds = new Set(t.map(item => item.transaction_id));
+          const recentInFlight = prev.filter(item => !fetchedIds.has(item.transaction_id));
+          return [...recentInFlight, ...t].slice(0, 30);
+        });
       }
     } catch (err) {
       console.warn("Polling error:", err);
@@ -126,8 +131,13 @@ export default function App() {
 
     try {
       const scored = await scoreTransaction(payload);
-      // Prepend to transaction feed immediately for instant UI feedback
-      setTransactions(prev => [scored, ...prev.slice(0, 29)]);
+      // Merge payload attributes (amount, customer_id, location, device) with scoring outputs
+      const completeTxn = {
+        ...payload,
+        ...scored,
+        latency_ms: scored.latency_breakdown_ms?.total || 18.0
+      };
+      setTransactions(prev => [completeTxn, ...prev.filter(x => x.transaction_id !== completeTxn.transaction_id)].slice(0, 30));
       // Trigger background summary refresh
       fetchDashboardSummary().then(setSummary).catch(() => {});
     } catch (err) {
