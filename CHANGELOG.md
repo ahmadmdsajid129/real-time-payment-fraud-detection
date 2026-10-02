@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2026-10-02
+
+### Added
+- **Phase 10: Event Streaming Engine & Message Bus**:
+  - `services/streaming_client.py`: Dual-mode streaming client supporting Apache Kafka and partition-aware in-memory fallback.
+  - `services/transaction_generator/producer.py`: High-throughput transaction generator keying events by `customer_id` into `transactions.raw`.
+- **Phase 11: Real-Time Feature Service & Redis State Cache**:
+  - `services/feature_service/redis_state.py`: Redis sliding-window sorted sets (`ZSET`) and hash counters for microsecond state retrieval.
+  - `services/feature_service/consumer.py`: Consumer enriching raw transaction payloads with temporal velocity and kinematics into `transactions.features`.
+- **Phase 12: Distributed Inference Service & TreeSHAP Explainer**:
+  - `services/inference_service/consumer.py`: Real-time pipeline evaluating Champion XGBoost, Isotonic Calibrator, Isolation Forest, and TreeSHAP feature attributions into `transactions.predictions`.
+- **Phase 13: FastAPI REST & SSE Scoring Backend**:
+  - `services/api/main.py` & `services/api/routes.py`: High-performance asynchronous API endpoints: `/transactions/score`, `/transactions/{id}/explanation`, `/customers/{id}/profile`, `/dashboard/summary`, `/feedback`, and `/metrics`.
+- **Phase 14: Modern React + Tailwind Forensic Investigation Dashboard**:
+  - `frontend/`: Fullstack React 19 + Tailwind CSS + Lucide Icons web application with glassmorphic dark fintech aesthetics.
+  - Interactive attack simulator toolbar (Normal, Velocity Burst, Impossible Travel, Account Takeover), live transaction table, and deep-dive forensic modal with TreeSHAP waterfall charts.
+- **Phase 15: Observability & Telemetry**:
+  - `services/observability/metrics.py`: Prometheus metrics suite instrumenting request latency histograms, prediction score distributions, and triage counters.
+  - `infrastructure/grafana/dashboards/fraud_operations.json`: Pre-configured Grafana operations dashboard.
+- **Phase 16: Model Monitoring & Data Drift**:
+  - `ml/src/monitoring/drift_detector.py`: Population Stability Index (PSI) and two-sample Kolmogorov-Smirnov (KS) test runner emitting `data/processed/drift_report.json`.
+- **Phase 17: Cold Start & Entity Resolution**:
+  - `services/risk_engine/entity_resolution.py`: Bayesian shrinkage estimators for new cardholders and cross-account device syndicate graph detection.
+- **Phase 18: Security, Masking & Synthetic PII Protection**:
+  - `services/security/masking.py`: IPv4/IPv6 octet masking, payment token redaction, and SHA-256 idempotency fingerprinting.
+  - `docs/SECURITY_AUDIT_REPORT.md`: Comprehensive OWASP Top 10 security audit and vulnerability assessment.
+  - `SecurityHeadersMiddleware`: OWASP security headers (`nosniff`, `DENY` frames, HSTS, strict referrers).
+- **Phase 19: Chaos Engineering & Fault Injection**:
+  - `tests/integration/test_chaos_resilience.py`: Automated chaos tests validating graceful fallback during Redis outages, model missing scenarios, and Dead Letter Queue (`transactions.dlq`) poison pill routing.
+- **Phase 20: Comprehensive Automated Testing**:
+  - 61 out of 61 unit and integration tests passing with 100% success rate across 15 test suites.
+- **Phase 21: Container Orchestration**:
+  - Production multi-stage `Dockerfile` and `docker-compose.yml` orchestrating 8 heterogeneous services (Postgres, Redis, Kafka, Zookeeper, API, Prometheus, Grafana, and UI).
+- **Phase 22: Benchmark Testing & Latency SLA Verification**:
+  - `benchmarks/latency_benchmark.py`: Empirical single-threaded benchmark (250 live samples) generating `docs/BENCHMARK_REPORT.md` (Total HTTP roundtrip p50: 65.59 ms, p95: 92.24 ms).
+- **Phase 23: Technical Interview Walkthrough & Architecture Q&A Guide**:
+  - `docs/INTERVIEW_QUESTIONS.md`: 55 deep-dive questions with comprehensive explanations spanning ML, calibration, stream state, security hardening, and UI design.
+- **Phase 24: Final Documentation, Portfolio Showcase & Production Wrap-up**:
+  - Full project documentation, architectural diagrams, empirical leaderboards, and quickstart commands in `README.md`.
+
 ## [0.7.0] - 2026-10-01
 
 ### Added
