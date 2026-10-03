@@ -1,0 +1,156 @@
+{
+  "calibration": {
+    "raw_xgb": {
+      "brier_score": 0.0023,
+      "expected_calibration_error": 0.0031,
+      "bin_centers": [
+        0.05,
+        0.15,
+        0.25,
+        0.35,
+        0.45,
+        0.55,
+        0.65,
+        0.75,
+        0.85,
+        0.95
+      ],
+      "true_fractions": [
+        0.0005,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.6667,
+        1.0,
+        0.9815
+      ],
+      "bin_counts": [
+        2179,
+        6,
+        1,
+        1,
+        1,
+        1,
+        2,
+        3,
+        2,
+        54
+      ]
+    },
+    "platt": {
+      "brier_score": 0.003,
+      "expected_calibration_error": 0.0074,
+      "bin_centers": [
+        0.05,
+        0.15,
+        0.25,
+        0.35,
+        0.45,
+        0.55,
+        0.65,
+        0.75,
+        0.85,
+        0.95
+      ],
+      "true_fractions": [
+        0.0014,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.5,
+        1.0,
+        1.0,
+        0.9808,
+        0.0
+      ],
+      "bin_counts": [
+        2188,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        52,
+        0
+      ]
+    },
+    "isotonic": {
+      "brier_score": 0.0028,
+      "expected_calibration_error": 0.0014,
+      "bin_centers": [
+        0.05,
+        0.15,
+        0.25,
+        0.35,
+        0.45,
+        0.55,
+        0.65,
+        0.75,
+        0.85,
+        0.95
+      ],
+      "true_fractions": [
+        0.0014,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.6667,
+        0.0,
+        0.9808
+      ],
+      "bin_counts": [
+        2188,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        9,
+        0,
+        52
+      ]
+    }
+  },
+  "threshold_optimization": {
+    "optimal_f2_threshold": 0.07,
+    "optimal_f2_metrics": {
+      "threshold": 0.07,
+      "precision": 0.9355,
+      "recall": 0.9508,
+      "f1": 0.9431,
+      "f2": 0.9477,
+      "tp": 58.0,
+      "fp": 4.0,
+      "fn": 3.0,
+      "tn": 2185.0,
+      "fn_loss": 7195.81,
+      "fp_loss": 140.0,
+      "total_cost": 7335.81
+    },
+    "optimal_cost_threshold": 0.01,
+    "optimal_cost_metrics": {
+      "threshold": 0.01,
+      "precision": 0.6186,
+      "recall": 0.9836,
+      "f1": 0.7595,
+      "f2": 0.8798,
+      "tp": 60.0,
+      "fp": 37.0,
+      "fn": 1.0,
+      "tn": 2152.0,
+      "fn_loss": 303.39,
+      "fp_loss": 1295.0,
+      "total_cost": 1598.39
+    }
+  }
+}

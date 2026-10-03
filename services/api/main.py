@@ -101,7 +101,25 @@ app.include_router(router)
 
 
 @app.get("/")
-def root():
+def root(request: Request):
+    """If accessed from a browser (text/html), redirect to dashboard; otherwise return JSON metadata."""
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept and os.path.exists(frontend_dist):
+        return RedirectResponse(url="/dashboard/", status_code=307)
+    return {
+        "service": "Real-Time Payment Fraud Detection & Risk Engine",
+        "version": "1.0.0",
+        "documentation": "/docs",
+        "dashboard": "/dashboard",
+        "health": "/api/v1/health",
+        "metrics": "/metrics",
+    }
+
+
+@app.get("/api")
+@app.get("/api/v1")
+def api_root():
+    """Service metadata and health pointers."""
     return {
         "service": "Real-Time Payment Fraud Detection & Risk Engine",
         "version": "1.0.0",
@@ -115,5 +133,5 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     host = os.getenv("API_HOST", "0.0.0.0")
-    port = int(os.getenv("API_PORT", 8000))
+    port = int(os.getenv("PORT", os.getenv("API_PORT", 8000)))
     uvicorn.run("services.api.main:app", host=host, port=port, reload=True)

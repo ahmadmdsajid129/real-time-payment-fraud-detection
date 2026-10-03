@@ -1,0 +1,23 @@
+{
+  "isolation_forest": {
+    "mean_normal_score": 0.0993,
+    "mean_fraud_score": 0.7233,
+    "correlation_with_fraud": 0.582,
+    "features_used": [
+      "amount",
+      "log_amount",
+      "customer_amount_zscore",
+      "amount_to_avg_ratio",
+      "txn_count_1m",
+      "txn_count_5m",
+      "txn_count_1h",
+      "travel_speed_kmh",
+      "geo_distance_km",
+      "time_since_prev_txn",
+      "device_customer_count"
+    ]
+  },
+  "behavioral_profiler": {
+    "correlation_with_fraud": 0.7858
+  }
+}

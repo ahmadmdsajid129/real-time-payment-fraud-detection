@@ -1,0 +1,62 @@
+{
+  "DummyClassifier": {
+    "threshold": 0.5,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "pr_auc": 0.0271,
+    "roc_auc": 0.5,
+    "brier_score": 0.0264,
+    "confusion_matrix": {
+      "true_positives": 0,
+      "false_positives": 0,
+      "true_negatives": 2189,
+      "false_negatives": 61
+    },
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 1.0,
+    "total_test_samples": 2250,
+    "actual_fraud_samples": 61,
+    "actual_legitimate_samples": 2189
+  },
+  "LogisticRegression": {
+    "threshold": 0.5,
+    "precision": 0.4511,
+    "recall": 0.9836,
+    "f1": 0.6186,
+    "pr_auc": 0.9222,
+    "roc_auc": 0.9947,
+    "brier_score": 0.032,
+    "confusion_matrix": {
+      "true_positives": 60,
+      "false_positives": 73,
+      "true_negatives": 2116,
+      "false_negatives": 1
+    },
+    "false_positive_rate": 0.0333,
+    "false_negative_rate": 0.0164,
+    "total_test_samples": 2250,
+    "actual_fraud_samples": 61,
+    "actual_legitimate_samples": 2189
+  },
+  "RandomForest": {
+    "threshold": 0.5,
+    "precision": 1.0,
+    "recall": 0.8361,
+    "f1": 0.9107,
+    "pr_auc": 0.9858,
+    "roc_auc": 0.9989,
+    "brier_score": 0.0032,
+    "confusion_matrix": {
+      "true_positives": 51,
+      "false_positives": 0,
+      "true_negatives": 2189,
+      "false_negatives": 10
+    },
+    "false_positive_rate": 0.0,
+    "false_negative_rate": 0.1639,
+    "total_test_samples": 2250,
+    "actual_fraud_samples": 61,
+    "actual_legitimate_samples": 2189
+  }
+}
