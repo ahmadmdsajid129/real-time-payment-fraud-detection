@@ -2,16 +2,16 @@ import React from 'react';
 import { DollarSign, ShieldCheck, AlertTriangle, ShieldX, Clock, TrendingUp } from 'lucide-react';
 
 export default function KpiCards({ summary }) {
-  const totalVolume = (summary?.total_volume_usd || 0).toLocaleString('en-US', {
+  const totalVolume = Number(summary?.total_volume_usd || 0).toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0
   });
 
-  const totalTxns = (summary?.total_transactions || 0).toLocaleString();
-  const blockRate = (summary?.fraud_block_rate_pct || 0).toFixed(2);
-  const avgScore = (summary?.average_risk_score || 0).toFixed(1);
-  const p95Latency = (summary?.p95_latency_ms || 14.5).toFixed(1);
+  const totalTxns = Number(summary?.total_transactions || 0).toLocaleString();
+  const blockRate = Number(summary?.fraud_block_rate_pct || 0).toFixed(2);
+  const avgScore = Number(summary?.average_risk_score || 0).toFixed(1);
+  const p95Latency = Number(summary?.p95_latency_ms || 14.5).toFixed(1);
 
   const approvedCount = summary?.decisions?.approved || 0;
   const reviewCount = summary?.decisions?.review || 0;

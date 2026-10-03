@@ -110,13 +110,13 @@ export default function TransactionTable({ transactions, selectedTxn, onSelectTx
             ) : (
               filtered.map((t) => {
                 const isSelected = selectedTxn?.transaction_id === t.transaction_id;
-                const score = t.risk_score ?? (t.risk_decision?.risk_score ?? 0);
-                const decision = t.decision ?? (t.risk_decision?.decision ?? 'APPROVE');
-                const amount = (t.amount || 0).toLocaleString('en-US', {
+                const score = Number(t.risk_score ?? (t.risk_decision?.risk_score ?? 0));
+                const decision = String(t.decision ?? (t.risk_decision?.decision ?? 'APPROVE')).toUpperCase();
+                const amount = Number(t.amount || 0).toLocaleString('en-US', {
                   style: 'currency',
                   currency: t.currency || 'USD'
                 });
-                const totalLatency = t.latency_breakdown_ms?.total || t.latency_ms || 18.2;
+                const totalLatency = Number(t.latency_breakdown_ms?.total || t.latency_ms || 18.2);
 
                 return (
                   <tr

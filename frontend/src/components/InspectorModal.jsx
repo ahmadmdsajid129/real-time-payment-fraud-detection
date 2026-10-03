@@ -24,6 +24,8 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
       setExplanation(expData);
       setProfile(profData);
       setLoading(false);
+    }).catch(() => {
+      if (isMounted) setLoading(false);
     });
 
     return () => { isMounted = false; };
@@ -31,14 +33,51 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
 
   if (!txn) return null;
 
-  const score = txn.risk_score ?? (txn.risk_decision?.risk_score ?? 0);
-  const decision = txn.decision ?? (txn.risk_decision?.decision ?? 'APPROVE');
-  const calibratedProb = txn.calibrated_fraud_probability ?? (txn.prediction?.calibrated_probability ?? 0.05);
-  const anomalyScore = txn.anomaly_score ?? (txn.prediction?.anomaly_score ?? 0.1);
-  const rules = txn.rules_triggered ?? (txn.risk_decision?.rules_triggered ?? []);
+  // Defensive field extractions ensuring no undefined / object rendering errors
+  const score = Number(txn.risk_score ?? (txn.risk_decision?.risk_score ?? 0));
+  const decision = String(txn.decision ?? (txn.risk_decision?.decision ?? 'APPROVE')).toUpperCase();
+  const calibratedProb = Number(txn.calibrated_fraud_probability ?? (txn.prediction?.calibrated_probability ?? txn.calibrated_probability ?? 0.05));
+  const anomalyScore = Number(txn.anomaly_score ?? (txn.prediction?.anomaly_score ?? 0.1));
 
-  const positiveDrivers = explanation?.top_positive_drivers || txn.shap_positive_drivers || [];
-  const negativeDrivers = explanation?.top_negative_drivers || txn.shap_negative_drivers || [];
+  // Extract rules safely whether strings or serialized rule dicts
+  const rawRules = txn.triggered_rules || txn.rules_triggered || txn.risk_decision?.triggered_rules || txn.risk_decision?.rules || [];
+  const rules = Array.isArray(rawRules)
+    ? rawRules.map(r => {
+        if (typeof r === 'object' && r !== null) {
+          return r.name || r.rule_name || r.rule_id || JSON.stringify(r);
+        }
+        return String(r);
+      })
+    : [];
+
+  // Extract and normalize SHAP local attribution drivers safely
+  const rawPos = explanation?.top_positive_features || explanation?.top_positive_drivers || txn.shap_positive_drivers || [];
+  const rawNeg = explanation?.top_negative_features || explanation?.top_negative_drivers || txn.shap_negative_drivers || [];
+
+  const normalizeDriver = (d) => {
+    if (!d) return null;
+    const featName = d.feature || d.name || 'Feature';
+    const rawVal = d.impact !== undefined ? d.impact : (d.shap_value !== undefined ? d.shap_value : d.value);
+    const numVal = typeof rawVal === 'number' ? rawVal : parseFloat(rawVal || 0);
+    return {
+      feature: String(featName),
+      value: isNaN(numVal) ? 0 : numVal
+    };
+  };
+
+  const positiveDrivers = (Array.isArray(rawPos) ? rawPos : []).map(normalizeDriver).filter(Boolean);
+  const negativeDrivers = (Array.isArray(rawNeg) ? rawNeg : []).map(normalizeDriver).filter(Boolean);
+
+  // Customer Profile fallbacks
+  const avgSpend = Number(profile?.historical_average_amount ?? profile?.average_amount ?? 120.0);
+  const knownDevicesCount = Array.isArray(profile?.known_devices) ? profile.known_devices.length : 1;
+  const vel1h = Number(profile?.recent_velocity?.count_last_1h ?? profile?.recent_velocity?.txn_count_1h ?? 0);
+  const vel24h = Number(profile?.recent_velocity?.count_last_24h ?? profile?.recent_velocity?.txn_count_24h ?? 1);
+
+  const formattedAmount = Number(txn.amount || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: txn.currency || 'USD'
+  });
 
   const handleFeedback = async (e) => {
     e.preventDefault();
@@ -94,13 +133,13 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
               </span>
             </div>
             <p className="text-xs text-gray-400 font-mono mt-1">
-              Customer: <span className="text-gray-200 font-semibold">{txn.customer_id}</span> • Device: <span className="text-gray-200">{txn.device_id}</span> • Location: <span className="text-gray-200">{txn.city || 'NYC'}, {txn.country || 'US'}</span>
+              Customer: <span className="text-gray-200 font-semibold">{txn.customer_id}</span> • Device: <span className="text-gray-200">{txn.device_id || 'DEV-MOBILE'}</span> • Location: <span className="text-gray-200">{txn.city || 'NYC'}, {txn.country || 'US'}</span>
             </p>
           </div>
 
           <div className="text-right">
             <div className="text-2xl font-bold font-mono text-white">
-              {(txn.amount || 0).toLocaleString('en-US', { style: 'currency', currency: txn.currency || 'USD' })}
+              {formattedAmount}
             </div>
             <div className="text-xs text-gray-400 font-mono">
               Risk Score: <span className="font-bold text-white text-sm">{score.toFixed(1)}</span> / 100
@@ -126,7 +165,7 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
                     <span className="text-white font-bold">{(calibratedProb * 100).toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-1.5">
-                    <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${calibratedProb * 100}%` }}></div>
+                    <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, Math.max(0, calibratedProb * 100))}%` }}></div>
                   </div>
                 </div>
 
@@ -136,7 +175,7 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
                     <span className="text-white font-bold">{(anomalyScore * 100).toFixed(1)}%</span>
                   </div>
                   <div className="w-full bg-gray-900 rounded-full h-1.5">
-                    <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${anomalyScore * 100}%` }}></div>
+                    <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, Math.max(0, anomalyScore * 100))}%` }}></div>
                   </div>
                 </div>
 
@@ -150,7 +189,7 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
                   <div className="w-full bg-gray-900 rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-emerald-500 via-amber-500 to-red-500 h-2 rounded-full"
-                      style={{ width: `${score}%` }}
+                      style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
                     ></div>
                   </div>
                 </div>
@@ -186,19 +225,19 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
               <div className="grid grid-cols-2 gap-2 text-xs font-mono mt-2">
                 <div className="p-2 rounded bg-gray-900/60">
                   <span className="text-gray-400 block text-[10px]">Avg Spend:</span>
-                  <span className="text-white font-bold">${(profile?.average_amount || 120.0).toFixed(2)}</span>
+                  <span className="text-white font-bold">${avgSpend.toFixed(2)}</span>
                 </div>
                 <div className="p-2 rounded bg-gray-900/60">
                   <span className="text-gray-400 block text-[10px]">Known Devices:</span>
-                  <span className="text-white font-bold">{profile?.known_devices?.length || 1} registered</span>
+                  <span className="text-white font-bold">{knownDevicesCount} registered</span>
                 </div>
                 <div className="p-2 rounded bg-gray-900/60">
                   <span className="text-gray-400 block text-[10px]">1-Hour Velocity:</span>
-                  <span className="text-white font-bold">{profile?.recent_velocity?.txn_count_1h || 0} txns</span>
+                  <span className="text-white font-bold">{vel1h} txns</span>
                 </div>
                 <div className="p-2 rounded bg-gray-900/60">
                   <span className="text-gray-400 block text-[10px]">24-Hour Velocity:</span>
-                  <span className="text-white font-bold">{profile?.recent_velocity?.txn_count_24h || 1} txns</span>
+                  <span className="text-white font-bold">{vel24h} txns</span>
                 </div>
               </div>
             </div>
@@ -228,12 +267,12 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
                       Top Risk Increasers (+)
                     </span>
                     {positiveDrivers.length === 0 ? (
-                      <p className="text-gray-500 text-[11px] italic">None</p>
+                      <p className="text-gray-500 text-[11px] italic">None (No high-risk drivers identified)</p>
                     ) : (
                       positiveDrivers.map((d, i) => (
                         <div key={i} className="flex items-center justify-between py-1 border-b border-gray-900">
                           <span className="text-gray-300 truncate max-w-[180px]">{d.feature}</span>
-                          <span className="text-red-400 font-bold">+{d.shap_value.toFixed(4)}</span>
+                          <span className="text-red-400 font-bold">+{Math.abs(d.value).toFixed(4)}</span>
                         </div>
                       ))
                     )}
@@ -245,12 +284,12 @@ export default function InspectorModal({ txn, onClose, onFeedbackSubmitted }) {
                       Top Risk Mitigators (-)
                     </span>
                     {negativeDrivers.length === 0 ? (
-                      <p className="text-gray-500 text-[11px] italic">None</p>
+                      <p className="text-gray-500 text-[11px] italic">None (No baseline mitigators)</p>
                     ) : (
                       negativeDrivers.map((d, i) => (
                         <div key={i} className="flex items-center justify-between py-1 border-b border-gray-900">
                           <span className="text-gray-300 truncate max-w-[180px]">{d.feature}</span>
-                          <span className="text-emerald-400 font-bold">{d.shap_value.toFixed(4)}</span>
+                          <span className="text-emerald-400 font-bold">-{Math.abs(d.value).toFixed(4)}</span>
                         </div>
                       ))
                     )}
